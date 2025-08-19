@@ -32,8 +32,8 @@ To repeat the experiment with multiple random splits, using precomputed adjacenc
 python utils/precompute_adjacency_matrix.py ${DIST_FP} ${ANTIMICROBIAL} ${LABEL_FP} ${OUTDIR}
 ```
 
-### Demo (Under preparation)
-We provide real-world data (PATRIC database) for predicting vancomycin and linezolid resistance in <em>Enterococcus faecium</em> (Figure 4c,g). Please download the [dataset](https://figshare.com/), extract it, and place it in the main directory. Then, execute the following commands:
+### Demo
+We provide real-world data (PATRIC database) for predicting vancomycin and linezolid resistance in <em>Enterococcus faecium</em> (Figure 4c,g). Please download the [dataset](https://drive.google.com/file/d/1Ub0ngfWhoKsXUNf-ToyyYcRlWzxRMYfX/view?usp=sharing), extract it, and place it in the main directory. Then, execute the following commands:
 
 ```
 cd experiments/efaecium
@@ -50,5 +50,15 @@ done
 ```
 
 ## Citation
+```
+@article {Nguyen2025.07.24.666581,
+	author = {Nguyen, Hoai-An and Peleg, Anton Y. and Wisniewski, Jessica A. and Wang, Xiaoyu and Wang, Zhikang and Blakeway, Luke V. and Badoordeen, Gnei Z. and Theegala, Ravali and Doan, Nhu Quynh and Parker, Matthew H. and Green, Anna G. and Song, Jiangning and Dowe, David L. and Macesic, Nenad},
+	title = {AMR-GNN: A multi-representation graph neural network framework to enable genomic antimicrobial resistance prediction},
+	year = {2025},
+	doi = {10.1101/2025.07.24.666581},
+	URL = {https://www.biorxiv.org/content/early/2025/07/27/2025.07.24.666581},
+	journal = {bioRxiv}
+}
+```
 
 
