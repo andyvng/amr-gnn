@@ -517,9 +517,12 @@ def main(cfg):
         save_top_k=cfg.trainer.model_checkpoint.save_top_k,
     )
 
-    logger = WandbLogger(project=cfg.trainer.logger.project,
-                         name=cfg.trainer.logger.name,
-                         save_dir=cfg.trainer.logger.save_dir)
+    if cfg.trainer.logger.is_use:
+        logger = WandbLogger(project=cfg.trainer.logger.project,
+                             name=cfg.trainer.logger.name,
+                             save_dir=cfg.trainer.logger.save_dir)
+    else:
+        logger = None
 
     trainer = L.Trainer(
         default_root_dir=cfg.trainer.default_root_dir,

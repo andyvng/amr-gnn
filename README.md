@@ -16,12 +16,6 @@ Create conda environment
 conda env create -f envs/amr_gnn.yml
 ```
 
-Activate conda environment
-
-```
-conda activate amr_gnn
-```
-
 ## AMR prediction
 We use Hydra to manage configuration settings, all of which are specified in the [config.yaml](./conf/config.yaml) file. If you are not familiar with Hydra, please refer to their [documentation](https://hydra.cc/docs/intro/).
 
@@ -43,13 +37,15 @@ We provide real-world data (PATRIC database) for predicting vancomycin and linez
 
 ```
 cd experiments/efaecium
+conda activate amr_gnn
 
-for drug in vancomycin linezolid \
-    do for run_id in {0..9} \
-        do python ../src/amr_gnn.py -cp . \
-        data.run_id=${run_id} \
-        data.antimicrobial=${drug} \
-    done\
+for drug in vancomycin linezolid; do
+  for run_id in {0..9}; do
+    python ../../src/amr_gnn.py \
+      -cp "${PWD}" \
+      data.run_id="${run_id}" \
+      data.antimicrobial="${drug}"
+  done
 done
 ```
 
