@@ -39,10 +39,18 @@ python utils/precompute_adjacency_matrix.py ${DIST_FP} ${ANTIMICROBIAL} ${LABEL_
 ```
 
 ### Demo (Under preparation)
-We provide real-world data (PATRIC database) for predicting vancomycin resistance in <em>Enterococcus faecium</em> (Figure 4c,g). Please download the [dataset](https://figshare.com/), extract it, and place it in the main directory. Then, execute the following command:
+We provide real-world data (PATRIC database) for predicting vancomycin and linezolid resistance in <em>Enterococcus faecium</em> (Figure 4c,g). Please download the [dataset](https://figshare.com/), extract it, and place it in the main directory. Then, execute the following commands:
 
 ```
-python src/amr_gnn.py -cp demo_efaecium/conf
+cd experiments/efaecium
+
+for drug in vancomycin linezolid \
+    do for run_id in {0..9} \
+        do python ../src/amr_gnn.py -cp . \
+        data.run_id=${run_id} \
+        data.antimicrobial=${drug} \
+    done\
+done
 ```
 
 ## Citation

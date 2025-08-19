@@ -139,20 +139,32 @@ def create_graph_dataset(cfg):
     test_ids = pd.read_csv(cfg.data.test_ids, header=None, names=['id'])['id'].astype(str).values
     sample_ids = np.concatenate([train_ids, test_ids, val_ids])
     all_ids = pd.read_csv(cfg.data.labels)['id'].astype(str).values.tolist()
-    # Load distance matrix and create adjacency matrix for the first graph network
-    dist_df_1 = pd.read_csv(cfg.data.dist_matrix_1, index_col=0)
-    mask_ids_1 = [True if col in all_ids else False for col in dist_df_1.columns]
-    dist_df_1 = dist_df_1.copy().iloc[mask_ids_1, mask_ids_1]
-
-
-    # TODO: implement randomly dropping edges
-
-    if cfg.data.no_edge:
-        adj_mat_1 = pd.DataFrame(np.zeros((dist_df_1.shape[0], dist_df_1.shape[0]), dtype=int),
-                               index=dist_df_1.index,
-                               columns=dist_df_1.columns)
+    
+    
+    if cfg.preexisting_adj_matrix.is_use:
+        adj_mat_1 = pd.read_csv(cfg.preexisting_adj_matrix.file_path_1,
+                                    index_col=0)
+        adj_mat_2 = pd.read_csv(cfg.preexisting_adj_matrix.file_path_2,
+                                    index_col=0)
     else:
-        if not cfg.preexisting_adj_matrix.is_use:
+        # Load distance matrix and create adjacency matrix for the first graph network
+        dist_df_1 = pd.read_csv(cfg.data.dist_matrix_1, index_col=0)
+        mask_ids_1 = [True if col in all_ids else False for col in dist_df_1.columns]
+        dist_df_1 = dist_df_1.copy().iloc[mask_ids_1, mask_ids_1]
+
+        dist_df_2 = pd.read_csv(cfg.data.dist_matrix_2, index_col=0)
+        mask_ids_2 = [True if col in all_ids else False for col in dist_df_2.columns]
+        dist_df_2 = dist_df_2.copy().iloc[mask_ids_2, mask_ids_2]
+
+        if cfg.data.no_edge:
+            adj_mat_1 = pd.DataFrame(np.zeros((dist_df_1.shape[0], dist_df_1.shape[0]), dtype=int),
+                                index=dist_df_1.index,
+                                columns=dist_df_1.columns)
+            
+            adj_mat_2 = pd.DataFrame(np.zeros((dist_df_2.shape[0], dist_df_2.shape[0]), dtype=int),
+                               index=dist_df_2.index,
+                               columns=dist_df_2.columns)
+        else:
             dist_list_1 = np.unique(dist_df_1.to_numpy().reshape(-1))
             dist_threshold_1 = 0
             if cfg.data.is_dist_1 == False: # Similarity matrix
@@ -176,33 +188,11 @@ def create_graph_dataset(cfg):
             else:
                 adj_mat_1 = (dist_df_1 >= dist_threshold_1).astype(int)
 
+
             # remove self-connected edges
             for i in range(adj_mat_1.shape[0]):
                 adj_mat_1.iloc[i, i] = 0
-        else:
-            adj_mat_1 = pd.read_csv(cfg.preexisting_adj_matrix.file_path_1,
-                                    index_col=0)
-    mask_1 = [True if str(col) in sample_ids else False for col in adj_mat_1.columns.values]
-    adj_mat_1 = adj_mat_1.copy().iloc[mask_1, mask_1]
-    if cfg.data.use_decoupling:
-        decoupling_mat = pd.read_csv(cfg.data.decoupling_matrix,
-                                     header=0, index_col=0)
-        decoupling_mat = decoupling_mat.copy().loc[adj_mat_1.columns, adj_mat_1.columns]
-        adj_mat_1 = ((adj_mat_1 - decoupling_mat) > 0).astype(int)
 
-    tmp_edge_index_1 = torch.Tensor(adj_mat_1.to_numpy()).nonzero().t() #convert to COO format
-
-    #Load distance matrix and create adjacency matrix for the second graph network
-    dist_df_2 = pd.read_csv(cfg.data.dist_matrix_2, index_col=0)
-    mask_ids_2 = [True if col in all_ids else False for col in dist_df_2.columns]
-    dist_df_2 = dist_df_2.copy().iloc[mask_ids_2, mask_ids_2]
-
-    if cfg.data.no_edge:
-        adj_mat_2 = pd.DataFrame(np.zeros((dist_df_2.shape[0], dist_df_2.shape[0]), dtype=int),
-                               index=dist_df_2.index,
-                               columns=dist_df_2.columns)
-    else:
-        if not cfg.preexisting_adj_matrix.is_use:
             dist_list_2 = np.unique(dist_df_2.to_numpy().reshape(-1))
             dist_threshold_2 = 0
             if cfg.data.is_dist_2 == False: # Similarity matrix
@@ -229,11 +219,18 @@ def create_graph_dataset(cfg):
             # remove self-connected edges
             for i in range(adj_mat_2.shape[0]):
                 adj_mat_2.iloc[i, i] = 0
-        else:
-            adj_mat_2 = pd.read_csv(cfg.preexisting_adj_matrix.file_path_2,
-                                    index_col=0)
-            
-        
+
+    mask_1 = [True if str(col) in sample_ids else False for col in adj_mat_1.columns.values]
+    adj_mat_1 = adj_mat_1.copy().iloc[mask_1, mask_1]
+    if cfg.data.use_decoupling:
+        decoupling_mat = pd.read_csv(cfg.data.decoupling_matrix,
+                                     header=0, index_col=0)
+        decoupling_mat = decoupling_mat.copy().loc[adj_mat_1.columns, adj_mat_1.columns]
+        adj_mat_1 = ((adj_mat_1 - decoupling_mat) > 0).astype(int)
+
+    tmp_edge_index_1 = torch.Tensor(adj_mat_1.to_numpy()).nonzero().t() #convert to COO format
+                 
+   
     mask_2 = [True if col in sample_ids else False for col in adj_mat_2.columns]
     adj_mat_2 = adj_mat_2.copy().iloc[mask_2, mask_2]
     
@@ -381,7 +378,7 @@ class GNNModel(nn.Module):
             out_2 = self.middle_layers_2(x_2, context=x_1).squeeze(dim=1) # (B, 1, D) -> (B, D)
             x = torch.cat([out_1, out_2], dim=-1)
             x = self.classification_head(x)
-        elif self.middle_layer == "f":
+        elif self.middle_layer == "low_rank_fusion":
             x = self.middle_layers(x_1, x_2)
         else:
             if self.middle_layer == "mean":
