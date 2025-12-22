@@ -212,3 +212,6 @@ data/
 analysis/
 src/outputs/
 scripts/
+demo/
+outputs/
+preprocess/

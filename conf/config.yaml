@@ -4,27 +4,23 @@ data:
   labels: "/pvol/data/ast_data_filter_duplicates_041223.csv"
   root_dir: "/pvol/data/extracted_feats/kmer/combined_kmers"
   input_dir: "${data.root_dir}/${data.run_id}/${data.antimicrobial}"
-  id_root_dir: "z"
-  train_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_train.ids"
+  id_root_dir: ""
+  whole_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_whole.ids"
   val_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_val.ids"
-  test_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_test.ids"
-  dist_matrix_1: "/pvol/data/distances/fcgr_7mer_dist.csv"
-  dist_matrix_2: "/pvol/data/distances/merged_snp_dist.csv"
-  is_dist_1: True
-  is_dist_2: True
+  train_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_train.ids"
+  predict_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_predict.ids"
+  test_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_predict.ids"
   retaining_pmille: 2
   use_decoupling: False
+  use_class_weight: True
   decoupling_matrix: "/pvol/data/mlst_decoupling_mat.csv"
   no_edge: False
   save_adj_matrix: False
 
-preexisting_adj_matrix:
-  is_use: False
-  root_dir_1: "/pvol/data/adj_mats/fcgr_7mer"
-  root_dir_2: "/pvol/data/adj_mats/merged_snp"
-  prefix: "permille"
-  file_path_1: "${preexisting_adj_matrix.root_dir_1}/${data.antimicrobial}/${preexisting_adj_matrix.prefix}_${data.retaining_pmille}.csv"
-  file_path_2: "${preexisting_adj_matrix.root_dir_2}/${data.antimicrobial}/${preexisting_adj_matrix.prefix}_${data.retaining_pmille}.csv"
+adj_matrix:
+  use_precompute_matrix: True
+  file_path_1: ""
+  file_path_2: ""
 
 gnn:
   model_name: "GNN"
@@ -34,11 +30,13 @@ gnn:
   c_hidden: 128
   c_out: 1
   dp_rate: 0.5
-  middle_layer: "concat"
+  middle_layer: "low_rank_fusion"
   GAT:
     heads: 8
   TransformerConv:
     heads: 8
+  lmf:
+    rank: 4
 
 trainer:
   seed: 222
@@ -62,4 +60,7 @@ trainer:
     project: "${trainer.logger.project_prefix}_${data.antimicrobial}"
     name_prefix: "6mer"
     name: "${trainer.logger.name_prefix}_${data.run_id}"
-  del_ckpt: True
+  del_ckpt: False
+
+prediction:
+  outdir: "${trainer.model_checkpoint.dirpath}"

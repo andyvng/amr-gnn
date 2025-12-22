@@ -1,26 +1,10 @@
 import glob
 import os
-import sys
 
 import hydra
 import lightning as L
-import numpy as np
-import pandas as pd
-import torch
-import torch.nn.functional as F
-import torch.optim as optim
-import torch_geometric
-import torch_geometric.data as geom_data
 import torch_geometric.loader as geom_loader
-import torch_geometric.nn as geom_nn
-from einops import rearrange, repeat
-from einops.layers.torch import Reduce
 from lightning.pytorch.callbacks import ModelCheckpoint
-from lightning.pytorch.loggers import WandbLogger
-from omegaconf import DictConfig, OmegaConf
-from torch import einsum, nn
-from torch.utils.data import DataLoader, Dataset
-from torchmetrics import AUROC
 
 from models import AMRNodeDualGNN
 from utils import create_graph_dataset
@@ -28,7 +12,7 @@ from utils import create_graph_dataset
 
 @hydra.main(version_base=None, config_path="../conf", config_name="config")
 def main(cfg):
-    L.seed_everything(cfg.trainer.seed * cfg.data.run_id)
+    L.seed_everything(cfg.trainer.seed)
 
     # Dataset & Dataloader
     dataset, adj_mat_1, adj_mat_2 = create_graph_dataset(cfg)
@@ -45,16 +29,6 @@ def main(cfg):
 
     # Create trainer
     os.makedirs(cfg.trainer.model_checkpoint.dirpath, exist_ok=True)
-    os.makedirs(cfg.trainer.logger.save_dir, exist_ok=True)
-
-    # Saving adjacency matrix
-    if cfg.data.save_adj_matrix:
-        adj_mat_1.to_csv(
-            os.path.join(cfg.trainer.model_checkpoint.dirpath, "adj_mat_1.csv")
-        )
-        adj_mat_2.to_csv(
-            os.path.join(cfg.trainer.model_checkpoint.dirpath, "adj_mat_2.csv")
-        )
 
     model_ckpt = ModelCheckpoint(
         dirpath=cfg.trainer.model_checkpoint.dirpath,
@@ -64,14 +38,7 @@ def main(cfg):
         save_top_k=cfg.trainer.model_checkpoint.save_top_k,
     )
 
-    if cfg.trainer.logger.is_use:
-        logger = WandbLogger(
-            project=cfg.trainer.logger.project,
-            name=cfg.trainer.logger.name,
-            save_dir=cfg.trainer.logger.save_dir,
-        )
-    else:
-        logger = None
+    logger = False
 
     trainer = L.Trainer(
         default_root_dir=cfg.trainer.default_root_dir,
@@ -91,18 +58,19 @@ def main(cfg):
         model, train_dataloaders=node_data_loader, val_dataloaders=node_data_loader
     )
 
-    # # Load the best checkpoint and evaluate on test set
-    # trainer.test(ckpt_path="best", dataloaders=node_data_loader)
+    # Load the best checkpoint and evaluate on test set if provided
+    if os.path.exists(cfg.data.test_ids):
+        trainer.test(ckpt_path="best", dataloaders=node_data_loader)
 
     # Clean up checkpoint files to save storage
     if cfg.trainer.del_ckpt:
         ckpt_files = glob.glob(
             os.path.join(cfg.trainer.model_checkpoint.dirpath, "*.ckpt")
         )
-
         for file in ckpt_files:
             os.remove(file)
 
 
 if __name__ == "__main__":
+    print("Training started... with Hydra config.")
     main()
