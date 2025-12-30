@@ -11,7 +11,7 @@ We use `uv` to manage Python environment and install tools used for this work. P
 Install essential tools:
 
 ```bash
-uv tool add gdown snakemake
+uv tool add gdown snakemake unitig-caller snippy
 ```
 
 ## Docker images
@@ -29,13 +29,13 @@ docker build -f Dockerfile -t amrgnn:latest .
 ```
 
 ## Data preprocessing
-We present a Snakemake workflow designed to generate feature input data from genome assemblies. First, download the following prerequisites from Google Drive. These files include the unitig database, the list of selected unitigs, the PAO1 reference genome, and a BED file marking curated *P. aeruginosa* AMR genes.
+We provide a Snakemake workflow for generating feature inputs from *P. aeruginosa* genome. To begin, please download the required reference files from Google Drive. This package includes the list of selected unitigs from Elastic Net, the PAO1 reference genome, and a CSV file detailing the positions of curated AMR genes on the PAO1 genome.
 
 ```bash
 gdown [URL] -O output/path --folder
 ```
 
-To execute the workflow, place all genome assemblies into a single directory and specify the file extension (default: .fasta). The workflow automatically identifies all assemblies within the directory to generate the corresponding node features and adjacency matrices.
+To execute the workflow, place all genome assemblies into a single directory and ensure the file extension is correctly specified (default: `.fasta`). The pipeline will automatically detect all assemblies within the target directory and generate the corresponding node features and adjacency matrices.
 
 ```
 cd preprocess
@@ -43,6 +43,7 @@ snakemake --cores 'all' assembly_dir="assemblies" \
                         unitig_db="unitig_db" \
                         ref_genome="ref_genome" \
                         amr_positions="amr_positions"
+                        
 
 ```
 
@@ -53,7 +54,7 @@ As an example to train AMR-GNN and perform AMR prediction afterwards, we provide
 gdown URL -O . --folder 
 ```
 
-The `data` folder contains the AST label files, the ids of E. faecium isoaltes included in the study, the selected unitigs for node features, two adjancency matrices derived from SNPS and FCGR features. Here is the structure of the `data` folder
+The `data` folder contains the AST label files, the ids of *E. faecium* isoaltes included in the study, the selected unitigs for node features, two adjancency matrices derived from SNPS and FCGR features. Here is the structure of the `data` folder
 
 <p align="center">
   <img src="./assets/file_tree.png" alt="Tree file" width="300">
@@ -68,6 +69,7 @@ docker run --rm \
            -v ${PWD}/experiments:/amrgnn/experiments \
            amrgnn:latest \
            src/train.py \
+           data.input_dir=data/extracted_unitigs \
            data.antimicrobial='vancomycin' \
            data.labels=data/ast_labels.csv \
            data.whole_ids=data/whole.ids \
@@ -89,12 +91,14 @@ docker run --rm \
            -v ${PWD}/experiments:/amrgnn/experiments \
            amrgnn:latest \
            src/predict.py \
+           data.input_dir=data/extracted_unitigs \
            data.antimicrobial='vancomycin' \
            data.labels=data/ast_labels.csv \
            data.whole_ids=data/whole.ids \
            data.predict_ids=data/predict.ids \
            adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
            adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+           trainer.model_checkpoint.dirpath=experiments/checkpoints \
            prediction.outdir="experiments/results"
 ```
 
@@ -106,13 +110,25 @@ The output files (`prediction_results.csv`) is a csv file include 4 columns
 
 ## Model interpretation
 
-We used Integrated gradients identify salient features. To compute the IG for each feature, please run the folowing command 
+We used Integrated Gradients for feature attribution, utilizing the reference genome's unitig features as the baseline.
 
 ```
-uv run interpretaion.py
+docker run --rm \
+           -v ${PWD}/data:/amrgnn/data \
+           -v ${PWD}/experiments:/amrgnn/experiments \
+           amrgnn:latest \
+           src/explain.py \
+           data.input_dir=data/extracted_unitigs \
+           data.antimicrobial='vancomycin' \
+           data.labels=data/ast_labels.csv \
+           data.whole_ids=data/whole.ids \
+           adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
+           adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+           trainer.model_checkpoint.dirpath=experiments/checkpoints \
+           explainer.outfp="experiments/explain/IG_attribution.csv"
 ```
 
-The output include the the IG for each features of each isolates.
+The output consists of a CSV file comprising a matrix of IG scores, where rows represent isolates and columns represent features.
 
 
 ## Citation

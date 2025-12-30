@@ -36,20 +36,3 @@ ENTRYPOINT [ "uv", "run"]
 
 # CMD
 CMD ["src/train.py"]
-
-
-
-# #TODO
-# # Create mounting point for data
-# RUN mkdir /preprocessed_MALDI && mkdir /checkpoints
-# RUN mkdir /data && touch /data/test_ids.csv
-
-# TODO
-# Set the entry point
-# ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "maldist", \ 
-#             "python", "/maldist/src/predict_multiclass.py", \
-#             "dataset.input_dir=/preprocessed_MALDI", \
-#             "dataset.predict_set_fp=/data/test_ids.csv", \
-#             "model.name=MALDICNN", \
-#             "trainer.accelerator=auto", \
-#             "trainer.devices=auto", \]

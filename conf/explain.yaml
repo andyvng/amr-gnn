@@ -1,0 +1,67 @@
+data:
+  run_id: 0
+  antimicrobial: "amikacin"
+  labels: "/pvol/data/ast_data_filter_duplicates_041223.csv"
+  root_dir: "/pvol/data/extracted_feats/kmer/combined_kmers"
+  input_dir: "${data.root_dir}/${data.run_id}/${data.antimicrobial}"
+  id_root_dir: ""
+  whole_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_whole.ids"
+  val_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_val.ids"
+  train_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_train.ids"
+  predict_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_predict.ids"
+  test_ids: "${data.id_root_dir}/${data.run_id}/${data.antimicrobial}_predict.ids"
+  retaining_pmille: 2
+  use_decoupling: False
+  use_class_weight: True
+  decoupling_matrix: "/pvol/data/mlst_decoupling_mat.csv"
+  no_edge: False
+  save_adj_matrix: False
+
+adj_matrix:
+  use_precompute_matrix: True
+  file_path_1: ""
+  file_path_2: ""
+
+gnn:
+  model_name: "GNN"
+  layer_name: "GCN"
+  use_feature_encoder: False
+  num_layers: 2
+  c_hidden: 128
+  c_out: 1
+  dp_rate: 0.5
+  middle_layer: "low_rank_fusion"
+  GAT:
+    heads: 8
+  TransformerConv:
+    heads: 8
+  lmf:
+    rank: 4
+
+trainer:
+  seed: 222
+  default_root_dir: "/mnt/experiments"
+  max_epochs: 200
+  accelerator: "auto"
+  devices: "auto"
+  accumulate_grad_batches: 1
+  num_nodes: 1
+  strategy: "auto"
+  precision: 32
+  model_checkpoint:
+    dirpath: "${trainer.default_root_dir}/out/${trainer.logger.project_prefix}_${trainer.logger.name_prefix}/${data.antimicrobial}/${data.run_id}/"
+    monitor: "val_loss"
+    mode: "min"
+    save_last: False
+    save_top_k: 1
+  logger:
+    save_dir: "${trainer.default_root_dir}/logger/${data.antimicrobial}/${data.run_id}"
+    project_prefix: "multi_wgs"
+    project: "${trainer.logger.project_prefix}_${data.antimicrobial}"
+    name_prefix: "6mer"
+    name: "${trainer.logger.name_prefix}_${data.run_id}"
+  del_ckpt: False
+
+explainer:
+  baseline: ""
+  out_fp: "IG_attributions.csv"
