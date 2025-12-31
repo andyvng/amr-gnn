@@ -29,22 +29,14 @@ docker build -f Dockerfile -t amrgnn:latest .
 ```
 
 ## Data preprocessing
-We provide a Snakemake workflow for generating feature inputs from *P. aeruginosa* genome. To begin, please download the required reference files from Google Drive. This package includes the list of selected unitigs from Elastic Net, the PAO1 reference genome, and a CSV file detailing the positions of curated AMR genes on the PAO1 genome.
-
-```bash
-gdown [URL] -O output/path --folder
-```
-
-To execute the workflow, place all genome assemblies into a single directory and ensure the file extension is correctly specified (default: `.fasta`). The pipeline will automatically detect all assemblies within the target directory and generate the corresponding node features and adjacency matrices.
+We provide a Snakemake workflow for generating feature inputs from genome assemblies. You will need to provide the list of selected unitigs from Elastic Net, an annotated reference genome for variant calling, and a CSV file detailing the positions of curated AMR genes on the reference genome. To execute the workflow, place all genome assemblies into a single directory and ensure the file extension is correctly specified (default: `.fasta`). The pipeline will automatically detect all assemblies within the target directory and generate the corresponding node features and adjacency matrices.
 
 ```
 cd preprocess
 snakemake --cores 'all' assembly_dir="assemblies" \
-                        unitig_db="unitig_db" \
+                        selected_unitigs="selected_unitigs" \
                         ref_genome="ref_genome" \
                         amr_positions="amr_positions"
-                        
-
 ```
 
 ## Train AMR-GNN model
