@@ -209,6 +209,9 @@ __marimo__/
 # Vscode
 .vscode/
 
+# Mac files
+*.DS_Store
+
 experiments/
 data/
 analysis/
@@ -216,4 +219,3 @@ src/outputs/
 scripts/
 demo/
 outputs/
-preprocess/

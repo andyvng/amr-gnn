@@ -1,0 +1,15 @@
+assemblies_dir: "../experiments/preprocess/test_assemblies"
+extension: ".fa"
+reference_genome: "../experiments/preprocess/data/ref/pao1.gbff"
+unitig_list: "../experiments/preprocess/unitig_query_files/imipenem_unitigs.txt"
+keep_proportion: 0.5
+
+fcgr:
+  position_fp: "../experiments/preprocess/data/gene_positions.csv"
+  kmer_size: 7
+  contig_id: "AE004091"
+
+outdir:
+  node_features: "../experiments/preprocess/results/node_features"
+  variants: "../experiments/preprocess/results/variants"
+  edge_matrices: "../experiments/preprocess/results/edge_matrices"
