@@ -32,10 +32,16 @@ docker build -f Dockerfile -t amrgnn:latest .
 We provide a Snakemake workflow for generating feature inputs from genome assemblies. You will need to provide the list of selected unitigs from Elastic Net, an annotated reference genome for variant calling, and a CSV file detailing the positions of curated AMR genes on the reference genome. To execute the workflow, place all genome assemblies into a single directory and ensure the file extension is correctly specified (default: `.fasta`). The pipeline will automatically detect all assemblies within the target directory and generate the corresponding node features and adjacency matrices.
 
 The following files need to be specified in the [config file](./preprocess/config.yaml) to run the pipeline:
-- Input directory containing genome assemblies.
-- The annotated reference genome (e.g., PAO1 genome)
-- The unitig list (with header) selected by Pyseer's elastic net. One unitig per line.
-- The position of selected AMR genes on the reference genome for FCGR feature extraction.
+
+| Argument                               | Description | 
+|----------------------------------------|-------------|
+| assemblies_dir  | Input directory containing genome assemblies |
+| reference_genome | Annotated reference genome (e.g., PAO1 genome) |
+| unitig_list | Unitig list (with header) selected by Pyseer's elastic net. One unitig per line |
+| position_fp | Position of selected AMR genes on the reference genome for FCGR feature extraction |
+| keep_proportion | Retention proportion based on the total number of possible edges |
+
+Run the pipeline
 
 ```
 cd preprocess
