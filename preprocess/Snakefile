@@ -19,24 +19,12 @@ rule all:
         snps_adj_matrix=os.path.join(config["outdir"]["edge_matrices"], "snps_adj_matrix.csv"),
         fcgr_adj_matrix=os.path.join(config["outdir"]["edge_matrices"], "fcgr_adj_matrix.csv")
 
-# rule all:
-#     input:
-#         # 1. Node feature vectors for each assembly
-#         node_features = expand(os.path.join(config["outdir"]["node_features"], "{sample}.pt"), sample=SAMPLES),
-#         vcf_files = expand(os.path.join(config["outdir"]["variants"], "{sample}/vcf.txt"), sample=SAMPLES),
-#         # 2. Adjacency matrices
-#         os.path.join(config["outdir"]["edge_matrices"], "snps_adj_matrix.csv"),
-#         os.path.join(config["outdir"]["edge_matrices"], "fcgr_adj_matrix.csv"),
-
-#         # 3. Clean up middle directories
-#         clean_up_dirs = [config["outdir"]["extracted_unitigs"], config["outdir"]["variants"]]
-#     shell:
-#         "rm -rf {input.clean_up_dirs}"
-
 # Rules to extract unitigs from assemblies
 rule prepare_strain_list:
     output:
         "strain_list.txt"
+    conda:
+        "amrgnn.yaml"
     run:
         files = glob.glob(os.path.join(ASSEMBLY_DIR, "*" + EXT))
         
@@ -51,6 +39,8 @@ rule query_unitigs:
         unitig_list=config["unitig_list"]
     output:
         "unitig_caller.pyseer"
+    conda:
+        "amrgnn.yaml"    
     threads: 4
     shell:
         """
@@ -66,6 +56,8 @@ rule convert_unitig_to_node_features:
         outdir=config["outdir"]["node_features"]
     output:
         expand(os.path.join(config["outdir"]["node_features"], "{sample}.csv"), sample=SAMPLES)
+    conda:
+        "amrgnn.yaml"
     threads: 4
     shell:
         """
@@ -83,6 +75,8 @@ rule call_variants:
         ref_genome = REF_GENOME
     output:
         outdir=directory(os.path.join(config["outdir"]["variants"], "{isolate_id}"))
+    conda:
+        "amrgnn.yaml"
     shell:
         """
         snippy --cpus 2 \
@@ -100,6 +94,8 @@ rule get_snps_distance_matrix:
         keep_proportion = config["keep_proportion"]
     output:
         os.path.join(config["outdir"]["edge_matrices"], "snps_adj_matrix.csv")
+    conda:
+        "amrgnn.yaml"
     shell:
         """
         python compute_snp_distance_matrix.py --vcf_files {params.vcf_files} \
@@ -118,6 +114,8 @@ rule get_fcgr_distance_matrix:
         keep_proportion = config["keep_proportion"]
     output:
         os.path.join(config["outdir"]["edge_matrices"], "fcgr_adj_matrix.csv")
+    conda:
+        "amrgnn.yaml"
     shell:
         """
         python compute_fcgr_distance_matrix.py --aligned_assembly_files {params.aligned_assembly_files} \
