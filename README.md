@@ -52,10 +52,11 @@ snakemake --cores 'all'
 As an example to train AMR-GNN and perform AMR prediction afterwards, we provide real-world data (BV-BRC database) for predicting vancomycin resistance in <em>Enterococcus faecium</em>. Please download the dataset and mount this `data` folder to the Docker container to perform training.
 
 ```bash
-gdown URL -O . --folder 
+gdown 1KZlLvAF8jPyPk2YkW-LNbqb0gFUmu7rS
+tar -xzvf data.tar.gz && rm data.tar.gz
 ```
 
-The `data` folder contains the AST label files, the ids of *E. faecium* isoaltes included in the study, the selected unitigs for node features, two adjancency matrices derived from SNPS and FCGR features. Here is the structure of the `data` folder
+The `data` folder contains the AST label files, the ids of *E. faecium* isolates included in the study, the selected unitigs for node features, two adjancency matrices derived from SNPS and FCGR features. Here is the structure of the `data` folder
 
 <p align="center">
   <img src="./assets/file_tree.png" alt="Tree file" width="300">
@@ -103,11 +104,14 @@ docker run --rm \
            prediction.outdir="experiments/results"
 ```
 
-The output files (`prediction_results.csv`) is a csv file include 4 columns
-- The isolate id
-- The true AMR phenotype (Resistant/Susceptible)
-- The predicted probability from AMR-GNN
-- The predicted AMR phenotype (Resistant/Susceptible)
+The output files (`prediction_results.csv`) is a csv file including 4 columns
+
+| Column                               | Description | 
+|----------------------------------------|-------------|
+| isolate_ids  | Isolate id |
+| y_true | True AST phenotype (Resistant/Susceptible) |
+| y_proba | Predicted probability from AMR-GNN |
+| y_pred | Predicted AST phenotype (Resistant/Susceptible) |
 
 ## Model interpretation
 

@@ -15,8 +15,3 @@ dependencies = [
     "seaborn==0.13.2",
     "torch-geometric==2.4.0",
 ]
-
-[tool.uv.workspace]
-members = [
-    "preprocess",
-]

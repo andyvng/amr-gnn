@@ -289,7 +289,7 @@ class AMRNodeDualGNN(L.LightningModule):
 
         # storing result of testing samples:
         self.results = {
-            "isolate_ids": None,
+            "isolate_id": None,
             "y_true": None,
             "y_proba": None,
         }
@@ -323,12 +323,12 @@ class AMRNodeDualGNN(L.LightningModule):
             tmp_targets = data.y[mask].squeeze().cpu().numpy()
 
             if self.results["y_true"] is None:
-                self.results["isolate_ids"] = tmp_isolate_ids
+                self.results["isolate_id"] = tmp_isolate_ids
                 self.results["y_true"] = tmp_targets
                 self.results["y_proba"] = tmp_proba
             else:
-                self.results["isolate_ids"] = np.concatenate(
-                    [self.results["isolate_ids"], tmp_ids]
+                self.results["isolate_id"] = np.concatenate(
+                    [self.results["isolate_id"], tmp_isolate_ids]
                 )
                 self.results["y_true"] = np.concatenate(
                     [self.results["y_true"], tmp_targets]
