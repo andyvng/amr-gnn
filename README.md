@@ -72,12 +72,11 @@ docker run --rm \
            amrgnn:latest \
            src/train.py \
            data.input_dir=data/extracted_unitigs \
-           data.antimicrobial='vancomycin' \
+           data.antimicrobial=vancomycin \
            data.labels=data/ast_labels.csv \
            data.whole_ids=data/whole.ids \
            data.train_ids=data/train.ids \
            data.val_ids=data/val.ids \
-           data.test_ids=data/predict.ids \
            adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
            adj_matrix.file_path_2=data/snps_adj_matrix.csv \
            trainer.model_checkpoint.dirpath=experiments/checkpoints 
@@ -94,14 +93,14 @@ docker run --rm \
            amrgnn:latest \
            src/predict.py \
            data.input_dir=data/extracted_unitigs \
-           data.antimicrobial='vancomycin' \
+           data.antimicrobial=vancomycin \
            data.labels=data/ast_labels.csv \
            data.whole_ids=data/whole.ids \
            data.predict_ids=data/predict.ids \
            adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
            adj_matrix.file_path_2=data/snps_adj_matrix.csv \
            trainer.model_checkpoint.dirpath=experiments/checkpoints \
-           prediction.outdir="experiments/results"
+           prediction.outdir=experiments/results
 ```
 
 The output files (`prediction_results.csv`) is a csv file including 4 columns
@@ -124,7 +123,7 @@ docker run --rm \
            amrgnn:latest \
            src/explain.py \
            data.input_dir=data/extracted_unitigs \
-           data.antimicrobial='vancomycin' \
+           data.antimicrobial=vancomycin \
            data.labels=data/ast_labels.csv \
            data.whole_ids=data/whole.ids \
            adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
