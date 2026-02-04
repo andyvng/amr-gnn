@@ -28,6 +28,12 @@ Build the Docker image:
 docker build -f Dockerfile -t amrgnn:latest .
 ```
 
+## Apptainer (formerly Singularity) images
+If you are using Apptainer, it is possible to convert the Docker image into Apptainer image.
+```
+apptainer build amrgnn.sif docker-daemon://amrgnn:latest
+```
+
 ## Data preprocessing
 We provide a Snakemake workflow for generating feature inputs from genome assemblies. You will need to provide the list of selected unitigs from Elastic Net, an annotated reference genome for variant calling, and a CSV file detailing the positions of curated AMR genes on the reference genome. To execute the workflow, place all genome assemblies into a single directory and ensure the file extension is correctly specified (default: `.fasta`). The pipeline will automatically detect all assemblies within the target directory and generate the corresponding node features and adjacency matrices.
 
@@ -101,13 +107,6 @@ docker run --rm \
 ```
 
 ### Train with `apptainer`
-
-If you are using Apptainer (formerly Singularity), it is possible to convert the Docker image into Apptainer image
-```
-apptainer build amrgnn.sif docker-daemon://amrgnn:latest
-```
-
-Then you can train the model with the newly created Apptainer image
 ```
 apptainer exec --nv \
                --pwd /amrgnn \
