@@ -19,11 +19,15 @@ def main(cfg):
     c_in = dataset.x.size(-1)
 
     # Load model from checkpoint
-    model_kwargs = {"heads": cfg.gnn.GAT.heads}  # If GAT is used
+    model_kwargs = {}
+
+    if cfg.gnn.layer_name in ["GAT", "GATv2"]:
+        model_kwargs["heads"] = cfg.gnn.GAT.heads
+    elif cfg.gnn.layer_name == "TransformerConv":
+        model_kwargs["heads"] = cfg.gnn.TransformerConv.heads
     model = GNNModel(cfg=cfg, c_in=c_in, **model_kwargs)
 
     checkpoint = glob.glob(os.path.join(cfg.trainer.model_checkpoint.dirpath, "*.ckpt"))
-    print(checkpoint[0])
     assert len(checkpoint) == 1, (
         "There should be exactly one checkpoint file in the specified directory."
     )
@@ -44,8 +48,12 @@ def main(cfg):
     model_weights = {k.lstrip("."): v for k, v in model_weights.items()}
     model.load_state_dict(model_weights)
     model.eval()
+    model.to(device)
 
-    baseline = torch.load(cfg.explainer.baseline).to(device)
+    if cfg.explainer.baseline.endswith(".pt"):
+        baseline = torch.load(cfg.explainer.baseline).to(device)
+    else:
+        baseline = None  # Captum will use zero baseline by default
 
     dl = IntegratedGradients(model)
 
@@ -60,11 +68,13 @@ def main(cfg):
         target=None,
         baselines=baseline,
         additional_forward_args=(edge_index_1, edge_index_2),
+        internal_batch_size=x.size(0),
+        n_steps=cfg.explainer.n_steps,
     )
 
     # Save attribution with node ids and isolate codes
     tmp_attribution_df = pd.DataFrame(attribution.detach().cpu().numpy())
-    attribution_df = pd.concat([node_id_df, tmp_attribution_df], axis=1)
+    attribution_df: pd.DataFrame = pd.concat([node_id_df, tmp_attribution_df], axis=1)
     attribution_df.to_csv(cfg.explainer.out_fp, index=False)
 
 

@@ -18,8 +18,8 @@ ENV UV_TOOL_BIN_DIR=/usr/local/bin
 # Set up working directory
 WORKDIR /amrgnn
 COPY . /amrgnn
-RUN mkdir /amrgnn/data
-RUN mkdir /amrgnn/experiments
+RUN mkdir -p /amrgnn/data
+RUN mkdir -p /amrgnn/experiments
 
 # Install the project's dependencies using the lockfile and settings
 RUN --mount=type=cache,target=/root/.cache/uv \

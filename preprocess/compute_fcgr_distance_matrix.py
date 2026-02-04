@@ -55,7 +55,7 @@ def fcgr_transformation(sequence, k, max_kmers=0):
             maxy /= 2
         chaos[int(posy - 1)][int(posx - 1)] = value
         maxx = array_size
-        maxy = array_size
+        maxy: int = array_size
         posx = 1
         posy = 1
 

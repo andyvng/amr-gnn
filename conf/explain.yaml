@@ -65,3 +65,4 @@ trainer:
 explainer:
   baseline: ""
   out_fp: "IG_attributions.csv"
+  n_steps: 50

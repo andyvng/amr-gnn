@@ -62,9 +62,27 @@ The `data` folder contains the AST label files, the ids of *E. faecium* isolates
   <img src="./assets/file_tree.png" alt="Tree file" width="300">
 </p>
 
+Here, we used [Hydra](https://hydra.cc) to manage configuration settings. For the full list of configuration settings, please see [here](./conf/config.yaml)
 
-Train AMR-GNN for predicting vancomycin resistance
+### Configuration table
+| Column                               | Description | 
+|----------------------------------------|-------------|
+| isolate_ids  | Isolate id |
 
+### Run with `uv`
+```
+uv run src/train.py data.input_dir=data/extracted_unitigs \
+                    data.antimicrobial=vancomycin \
+                    data.labels=data/ast_labels.csv \
+                    data.whole_ids=data/whole.ids \
+                    data.train_ids=data/train.ids \
+                    data.val_ids=data/val.ids \
+                    adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
+                    adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+                    trainer.model_checkpoint.dirpath=experiments/checkpoints 
+```
+
+### Train with `docker`
 ```
 docker run --rm \
            -v ${PWD}/data:/amrgnn/data \
@@ -82,10 +100,48 @@ docker run --rm \
            trainer.model_checkpoint.dirpath=experiments/checkpoints 
 ```
 
-Here, we used [Hydra](https://hydra.cc) to manage configuration settings. For the full list of configuration settings, please see [here](./conf/config.yaml)
+### Train with `apptainer`
+
+If you are using Apptainer (formerly Singularity), it is possible to convert the Docker image into Apptainer image
+```
+apptainer build amrgnn.sif docker-daemon://amrgnn:latest
+```
+
+Then you can train the model with the newly created Apptainer image
+```
+apptainer exec --nv \
+               --pwd /amrgnn \
+               --bind ${PWD}/data:/amrgnn/data \
+               --bind ${PWD}/experiments:/amrgnn/experiments \
+               amrgnn.sif \
+               uv run src/train.py\
+               data.input_dir=data/extracted_unitigs \
+               data.antimicrobial=vancomycin \
+               data.labels=data/ast_labels.csv \
+               data.whole_ids=data/whole.ids \
+               data.train_ids=data/train.ids \
+               data.val_ids=data/val.ids \
+               adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
+               adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+               trainer.model_checkpoint.dirpath=experiments/checkpoints 
+```
 
 ## Predict AMR phenotype
-Load trained model to predict vancomycin resistance.
+
+### Predict vancomycin resistance with `uv`
+```
+uv run src/predict.py data.input_dir=data/extracted_unitigs \
+                    data.antimicrobial=vancomycin \
+                    data.labels=data/ast_labels.csv \
+                    data.whole_ids=data/whole.ids \
+                    data.predict_ids=data/predict.ids \
+                    adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
+                    adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+                    trainer.model_checkpoint.dirpath=experiments/checkpoints \
+                    prediction.outdir=experiments/results
+```
+
+### Predict with `docker`
 ```
 docker run --rm \
            -v ${PWD}/data:/amrgnn/data \
@@ -103,6 +159,25 @@ docker run --rm \
            prediction.outdir=experiments/results
 ```
 
+### Predict with `apptainer`
+```
+apptainer exec --nv \
+               --pwd /amrgnn \
+               --bind ${PWD}/data:/amrgnn/data \
+               --bind ${PWD}/experiments:/amrgnn/experiments \
+               amrgnn.sif \
+               src/predict.py \
+               data.input_dir=data/extracted_unitigs \
+               data.antimicrobial=vancomycin \
+               data.labels=data/ast_labels.csv \
+               data.whole_ids=data/whole.ids \
+               data.predict_ids=data/predict.ids \
+               adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
+               adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+               trainer.model_checkpoint.dirpath=experiments/checkpoints \
+               prediction.outdir=experiments/results
+```
+
 The output files (`prediction_results.csv`) is a csv file including 4 columns
 
 | Column                               | Description | 
@@ -116,6 +191,19 @@ The output files (`prediction_results.csv`) is a csv file including 4 columns
 
 We used Integrated Gradients for feature attribution, utilizing the reference genome's unitig features as the baseline.
 
+### Run with `uv`
+```
+uv run src/explain.py data.input_dir=data/extracted_unitigs \
+                      data.antimicrobial=vancomycin \
+                      data.labels=data/ast_labels.csv \
+                      data.whole_ids=data/whole.ids \
+                      adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
+                      adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+                      trainer.model_checkpoint.dirpath=experiments/checkpoints \
+                      explainer.out_fp="experiments/explain/IG_attribution.csv"
+```
+
+### Run with `docker`
 ```
 docker run --rm \
            -v ${PWD}/data:/amrgnn/data \
@@ -129,7 +217,26 @@ docker run --rm \
            adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
            adj_matrix.file_path_2=data/snps_adj_matrix.csv \
            trainer.model_checkpoint.dirpath=experiments/checkpoints \
-           explainer.outfp="experiments/explain/IG_attribution.csv"
+           explainer.out_fp="experiments/explain/IG_attribution.csv"
+```
+
+### Run with `apptainer`
+```
+apptainer exec --nv \
+               --pwd /amrgnn \
+               --bind ${PWD}/data:/amrgnn/data \
+               --bind ${PWD}/experiments:/amrgnn/experiments \
+               amrgnn.sif \
+               src/explain.py \
+               data.input_dir=data/extracted_unitigs \
+               data.antimicrobial=vancomycin \
+               data.labels=data/ast_labels.csv \
+               data.whole_ids=data/whole.ids \
+               data.predict_ids=data/predict.ids \
+               adj_matrix.file_path_1=data/fcgr_adj_matrix.csv \
+               adj_matrix.file_path_2=data/snps_adj_matrix.csv \
+               trainer.model_checkpoint.dirpath=experiments/checkpoints \
+               explainer.out_fp="experiments/explain/IG_attribution.csv"
 ```
 
 The output consists of a CSV file comprising a matrix of IG scores, where rows represent isolates and columns represent features.

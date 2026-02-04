@@ -212,6 +212,7 @@ __marimo__/
 # Mac files
 *.DS_Store
 
+# Custom directories
 experiments/
 data/
 analysis/
