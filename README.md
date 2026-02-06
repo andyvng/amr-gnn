@@ -22,6 +22,8 @@ git clone https://github.com/andyvng/amr-gnn.git && \
 cd amr-gnn
 ```
 
+
+
 Build the Docker image:
 
 ```bash
@@ -64,16 +66,39 @@ tar -xzvf data.tar.gz && rm data.tar.gz
 
 The `data` folder contains the AST label files, the ids of *E. faecium* isolates included in the study, the selected unitigs for node features, two adjancency matrices derived from SNPS and FCGR features. Here is the structure of the `data` folder
 
-<p align="center">
-  <img src="./assets/file_tree.png" alt="Tree file" width="300">
-</p>
+```
+./data/
+├── ast_labels.csv        # Susceptibility testing data
+├── config.yaml           # Configuration file
+├── extracted_unitigs     # Directory containing extracted unitigs for each isolate (Node features)
+├── fcgr_adj_matrix.csv   # FCGR-based adjacency matrix (Edge construction)
+├── snps_adj_matrix.csv   # SNP-based adjacency matrix (Edge construction)
+├── whole.ids             # All isolate IDs included in the analysis
+├── train.ids             # Training isolate IDs (for training step)
+├── val.ids               # Validation isolate IDs (for training step)
+└── predict.ids           # Prediction isolate IDs (for prediction step)
+```
 
 Here, we used [Hydra](https://hydra.cc) to manage configuration settings. For the full list of configuration settings, please see [here](./conf/config.yaml)
 
 ### Configuration table
-| Column                               | Description | 
+| Argument                               | Description | 
 |----------------------------------------|-------------|
-| isolate_ids  | Isolate id |
+| data.input_dir  | Directory containing node feature (unitigs) files |
+| data.labels  | CSV file of susceptibility data (0: susceptible/1: resistant) |
+| data.antimicrobial  | Column name of tested antimicrobial |
+| data.whole_ids  | All isolate IDs included in the analysis |
+| data.train_ids  | Training isolate IDs |
+| data.val_ids  | Validation isolate IDs |
+| data.adj_matrix.file_path_1  | The first adjacency matrix file |
+| data.adj_matrix.file_path_2  | The second adjacency matrix file |
+| data.model_checkpoint.dirpath  | Output directory to save the model checkpoint |
+| trainer.seed  | Set random state for the training |
+| trainer.max_epochs  | Number of training epochs (Default: 200) |
+| trainer.accelerator  | Training device (Default: "auto") |
+| trainer.devices  | Number of training devices (Default: "auto") |
+| trainer.model_checkpoint.monitor  | Quantity to monitor (Default: "val_loss") |
+| trainer.model_checkpoint.mode  | One of {min, max} (Default: "min") |
 
 ### Run with `uv`
 ```
@@ -126,6 +151,19 @@ apptainer exec --nv \
 ```
 
 ## Predict AMR phenotype
+
+### Configuration table
+| Argument                               | Description | 
+|----------------------------------------|-------------|
+| data.input_dir  | Directory containing node feature (unitigs) files |
+| data.labels  | CSV file of susceptibility data (0: susceptible/1: resistant) |
+| data.antimicrobial  | Column name of tested antimicrobial |
+| data.whole_ids  | All isolate IDs included in the analysis |
+| data.predict_ids  | Isolate IDs for prediction |
+| data.adj_matrix.file_path_1  | The first adjacency matrix file |
+| data.adj_matrix.file_path_2  | The second adjacency matrix file |
+| data.model_checkpoint.dirpath  | Directory containing the model checkpoint |
+| prediction.outdir  | Output directory for prediction results |
 
 ### Predict vancomycin resistance with `uv`
 ```
