@@ -3,8 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
-
-# import torch
+import torch
 
 
 def get_args():
@@ -44,15 +43,10 @@ def main():
             isolate_unitigs, on="unitig", how="left", indicator=True
         )
         merged_df["presence"] = np.where(merged_df["_merge"] == "both", 1, 0)
-        merged_df[["unitig", "presence"]].to_csv(
-            os.path.join(args.outdir, f"{isolate_id}.csv"), index=False
-        )
 
-        # TODO: convert to tensor
-        # node_features = torch.tensor(
-        #     merged_df["presence"].values, dtype=torch.long
-        # ).unsqueeze(1)
-        # torch.save(node_features, os.path.join(args.outdir, f"{isolate_id}.pt"))
+        # Convert to tensor and save as .pt file
+        ref_feats = torch.Tensor(merged_df["presence"])
+        torch.save(ref_feats, os.path.join(args.outdir, f"{isolate_id}.pt"))
 
 
 if __name__ == "__main__":
