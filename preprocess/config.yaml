@@ -2,7 +2,7 @@ assemblies_dir: "../experiments/preprocess/test_assemblies"
 extension: ".fa"
 reference_genome: "../experiments/preprocess/data/ref/pao1.gbff"
 unitig_list: "../experiments/preprocess/unitig_query_files/imipenem_unitigs.txt"
-keep_proportion: 0.5
+keep_proportion: 0.01
 
 fcgr:
   position_fp: "../experiments/preprocess/data/gene_positions.csv"

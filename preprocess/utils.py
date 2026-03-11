@@ -7,7 +7,7 @@ import pandas as pd
 def convert_distance_to_adjacency(
     dist_df, keep_proportion=None, threshold=None, convert_to_COO=False
 ):
-    if keep_proportion is not None:  # TODO: need to check this
+    if keep_proportion is not None:
         # Total possible edges = n*(n-1)/2
         total_edges = dist_df.shape[0] * (dist_df.shape[0] - 1) / 2
         # Edges to keep based on proportion
@@ -31,7 +31,7 @@ def convert_distance_to_adjacency(
     for i in range(adj_matrix.shape[0]):
         adj_matrix.iloc[i, i] = 0
 
-    if convert_to_COO:  # TODO: need to check this
+    if convert_to_COO:
         adj_matrix = adj_matrix.to_numpy()
         row, col = np.where(adj_matrix == 1)
         data = np.ones(len(row), dtype=int)
